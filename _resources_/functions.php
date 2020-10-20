@@ -74,14 +74,14 @@ function get_smarty() {
 }
 
 
-function get_thumb_name($src) {
-  global $thumb_width, $images_root_fs, $thumbs_folder_fs;
+function get_thumb_name($src, $target_width) {
+  global $images_root_fs, $thumbs_folder_fs;
 
   #var_dump($thumbs_folder_fs, $src, $images_root_fs, make_relative($src, $images_root_fs));
   #die();
   $thumb = $thumbs_folder_fs . make_relative($src, $images_root_fs);
   # Add the width now
-  return substr($thumb, 0, strrpos($thumb, '.')) . ".{$thumb_width}.png";
+  return substr($thumb, 0, strrpos($thumb, '.')) . ".{$target_width}.png";
 }
 
 
@@ -92,10 +92,8 @@ function swap(&$a, &$b) {
 }
 
 
-function create_thumb($src) {
-  global $thumb_width;
-
-  $thumb = get_thumb_name($src);
+function create_thumb($src, $target_width) {
+  $thumb = get_thumb_name($src, $target_width);
   if ( file_exists($thumb) ) return $thumb;
 
   @mkdir(dirname($thumb), 0755, true);
@@ -142,20 +140,20 @@ function create_thumb($src) {
     swap($width, $height);
   }
 
-  if ( $width < $thumb_width ) { # if original image is smaller don't resize it
-    $thumb_width = $width;
+  if ( $width < $target_width ) { # if original image is smaller don't resize it
+    $target_width = $width;
     $thumb_height = $height;
   }
   else {
-    $thumb_height = (int) (($thumb_width / $width) * $height);
+    $thumb_height = (int) (($target_width / $width) * $height);
   }
 
   if ( in_array($rotate, [90, -90]) ) {
     swap($width, $height);
-    swap($thumb_width, $thumb_height);
+    swap($target_width, $thumb_height);
   }
 
-  $virtual_image = imagecreatetruecolor($thumb_width, $thumb_height);
+  $virtual_image = imagecreatetruecolor($target_width, $thumb_height);
 
   if ( in_array($ext, ['gif', 'png']) ) { // preserve transparency
     imagecolortransparent($virtual_image, imagecolorallocatealpha($virtual_image, 0, 0, 0, 127));
@@ -163,7 +161,7 @@ function create_thumb($src) {
     imagesavealpha($virtual_image, true);
   }
 
-  imagecopyresampled($virtual_image,$source_image,0,0,0,0,$thumb_width,$thumb_height,$width,$height);
+  imagecopyresampled($virtual_image,$source_image,0,0,0,0,$target_width,$thumb_height,$width,$height);
 
   # Non-rotated image here!
   if ( $rotate != 0 ) {

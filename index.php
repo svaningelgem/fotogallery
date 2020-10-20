@@ -18,6 +18,7 @@
   $thumbs_folder = '_tmp_/thumbs';  # Should be reachable by the webserver (and writable by the webserver)
   $images_folder = '/opt/photos';  # Where are the images located? Can be anywhere
   $thumb_width = '256';  # In pixels (width), height is adjusted automatically
+  $preview_width = '2048';  # In pixels (width), height is adjusted automatically
   ###################################### CONFIG
 
   $images = array_map('strtolower', $images);
@@ -49,7 +50,13 @@
   case 'thumb':
     $image = $images_folder_fs . $current_image;
     header('Content-Type: image/jpeg');
-    readfile(create_thumb($image));
+    readfile(create_thumb($image, $thumb_width));
+    break;
+  
+  case 'preview':
+    $image = $images_folder_fs . $current_image;
+    header('Content-Type: image/jpeg');
+    readfile(create_thumb($image, $preview_width));
     break;
   
   case 'download':
